@@ -16,7 +16,6 @@ urlpatterns = [
     path('delete_counsellor/', views.delete_counsellor, name='delete_counsellor'),
     path('delete_patient/', views.delete_patient, name='delete_patient'),
     path('delete_appointment/', views.delete_appointment, name='delete_appointment'),
-    path('get_all_active_patients/', views.get_all_active_patients, name='get_all_active_patients'),
     path('get_all_active_counsellors/', views.get_all_active_counsellors, name='get_all_active_counsellors'),
     path('get_patient_all_appointments/', views.get_patient_all_appointments, name='get_patient_all_appointments'),
     path('get_counsellor_all_appointments/', views.get_counsellor_all_appointments, name='get_counsellor_all_appointments'),
