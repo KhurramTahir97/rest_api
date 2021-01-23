@@ -92,10 +92,14 @@ def create_patient(request):
         patient_name = "%s.%s_%s" %(first_name, last_name, get_random_string())
         patient_email = request.POST.get('patient_email')
         patient_password = request.POST.get('patient_password')
-        user = User.objects.create_user(username=patient_name, email=patient_email, password=patient_password)
-        patient = Patient.objects.create(i_auth_user=user)
-        response['status'] = True
-        response['message'] = "Patient Created With Email %s and ID %s" % (patient_email, str(patient.pk))
+        if len(patient_password) < 8:
+            response['status'] = False
+            response['errors'].append("Please Enter a Password of atleast 8 digit")
+        else:
+            user = User.objects.create_user(username=patient_name, email=patient_email, password=patient_password)
+            patient = Patient.objects.create(i_auth_user=user)
+            response['status'] = True
+            response['message'] = "Patient Created With Email %s and ID %s" % (patient_email, str(patient.pk))
     except Exception as e:
         response['errors'].append(repr(e))
         response['status'] = False
@@ -112,10 +116,14 @@ def create_counsellor(request):
         counsellor_name = "%s.%s_%s" %(first_name, last_name, get_random_string())
         counsellor_email = request.POST.get('counsellor_email')
         counsellor_password = request.POST.get('counsellor_password')
-        user = User.objects.create_user(username=counsellor_name, email=counsellor_email, password=counsellor_password)
-        patient = Counsellor.objects.create(i_auth_user=user)
-        response['status'] = True
-        response['message'] = "Counsellor Created With Email %s and ID %s" % (counsellor_email, str(patient.pk))
+        if len(counsellor_password) < 8:
+            response['status'] = False
+            response['errors'].append("Please Enter a Password of atleast 8 digit")
+        else:
+            user = User.objects.create_user(username=counsellor_name, email=counsellor_email, password=counsellor_password)
+            patient = Counsellor.objects.create(i_auth_user=user)
+            response['status'] = True
+            response['message'] = "Counsellor Created With Email %s and ID %s" % (counsellor_email, str(patient.pk))
     except Exception as e:
         response['errors'].append(repr(e))
         response['status'] = False
@@ -354,10 +362,21 @@ def create_appointment(request):
         i_patient = request.POST.get('i_patient_id')
         i_counsellor = request.POST.get('i_counsellor_id')
         appointment_date = request.POST.get('appointment_date')
-        date_appointment = datetime.datetime.strptime(appointment_date, "%Y-%m-%d").date()
-        final_date = datetime.datetime.combine(date_appointment, datetime.datetime.min.time())
+        final_date = datetime.datetime.strptime(appointment_date, '%d/%m/%y %H:%M:%S')
         patient_obj = Patient.objects.get(pk=i_patient)
+        patient_all_appointment = Appointment.objects.filter(i_patient=patient_obj)
+        dates = list(data.appointment_date.strftime('%d/%m/%y %H:%M:%S') for data in patient_all_appointment)
+        if final_date.strftime('%d/%m/%y %H:%M:%S') in dates:
+            response['status'] = False
+            response['errors'].append('Unable To create appointment because patient have same appointment in this slot')
+            return Response(response)
         counsellor_obj = Counsellor.objects.get(pk=i_counsellor)
+        counsellor_all_appointment = Appointment.objects.filter(i_counsellor=counsellor_obj)
+        dates = list(data.appointment_date.strftime('%d/%m/%y %H:%M:%S') for data in counsellor_all_appointment)
+        if final_date.strftime('%d/%m/%y %H:%M:%S') in dates:
+            response['status'] = False
+            response['errors'].append('Unable To create appointment because Counsellor have same appointment in this slot')
+            return Response(response)
         if patient_obj.i_auth_user.is_active:
             if counsellor_obj.i_auth_user.is_active:
                 Appointment.objects.create(i_patient=patient_obj,i_counsellor=counsellor_obj,appointment_date=final_date)
@@ -389,8 +408,7 @@ def update_appointment(request):
         i_patient = request.POST.get('i_patient_id')
         i_counsellor = request.POST.get('i_counsellor_id')
         appointment_date = request.POST.get('appointment_date')
-        date_appointment = datetime.datetime.strptime(appointment_date, "%Y-%m-%d").date()
-        final_date = datetime.datetime.combine(date_appointment, datetime.datetime.min.time())
+        final_date = datetime.datetime.strptime(appointment_date, '%d/%m/%y %H:%M:%S')
         appointment_obj = Appointment.objects.get(pk=appointment_id)
         patient_obj = Patient.objects.get(pk=i_patient)
         counsellor_obj = Counsellor.objects.get(pk=i_counsellor)

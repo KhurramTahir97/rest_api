@@ -12,10 +12,11 @@ class Patient(models.Model):
 class Counsellor(models.Model):
     i_auth_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.i_auth_user.email
+    def __unicode__(self):
+        return self.i_auth_user
 
 class Appointment(models.Model):
+
     i_patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     i_counsellor = models.ForeignKey(Counsellor, on_delete=models.CASCADE)
     appointment_date = models.DateTimeField()
